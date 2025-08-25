@@ -7,7 +7,9 @@ services:
     ports:
       - "8086:8086"
     environment:
-      - TRANSFORMERS_CACHE=/cache
+      - HF_HOME=/cache
+      - HUGGINGFACE_HUB_CACHE=/cache
+      - HF_TOKEN=${HF_TOKEN}   # pass your token
     volumes:
-      - ./cache:/cache   # mount local cache to persist model weights
+      - ./cache:/cache
     restart: unless-stopped
