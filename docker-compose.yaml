@@ -9,4 +9,5 @@ services:
     environment:
       - TRANSFORMERS_CACHE=/cache
     volumes:
-      - ./cache:/cache
+      - ./cache:/cache   # mount local cache to persist model weights
+    restart: unless-stopped
