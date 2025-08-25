@@ -1,12 +1,15 @@
 from flask import Flask, request, jsonify
 from transformers import AutoTokenizer, AutoModelForCausalLM
+import os
 
 app = Flask(__name__)
 
-# Download & cache model automatically (first run may take a while)
 MODEL_NAME = "google/gemma-3-270m"
-tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
+HF_TOKEN = os.getenv("HF_TOKEN")
+
+# Authenticate with token
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, token=HF_TOKEN)
+model = AutoModelForCausalLM.from_pretrained(MODEL_NAME, token=HF_TOKEN)
 
 @app.route("/generate", methods=["POST"])
 def generate():
