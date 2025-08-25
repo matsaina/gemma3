@@ -1,23 +1,16 @@
 FROM python:3.11-slim
 
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
+WORKDIR /app
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends git curl && \
-    rm -rf /var/lib/apt/lists/*
-
+# Install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-WORKDIR /app
-COPY app.py /app/
+# Copy app
+COPY app.py .
 
+# Expose port
 EXPOSE 8086
 
-CMD ["python", "app.py"]
-# Install gunicorn
-RUN pip install gunicorn
-
-# Use gunicorn instead of flask dev server
-CMD ["gunicorn", "--bind", "0.0.0.0:8086", "app:app"]
+# Run Uvicorn (production mode)
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8086", "--workers", "2"]
