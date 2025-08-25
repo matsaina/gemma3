@@ -16,3 +16,8 @@ COPY app.py /app/
 EXPOSE 8086
 
 CMD ["python", "app.py"]
+# Install gunicorn
+RUN pip install gunicorn
+
+# Use gunicorn instead of flask dev server
+CMD ["gunicorn", "--bind", "0.0.0.0:8086", "app:app"]
