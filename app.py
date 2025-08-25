@@ -3,8 +3,10 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 
 app = Flask(__name__)
 
-tokenizer = AutoTokenizer.from_pretrained("/model")
-model = AutoModelForCausalLM.from_pretrained("/model")
+# Download & cache model automatically (first run may take a while)
+MODEL_NAME = "google/gemma-3-270m"
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
 
 @app.route("/generate", methods=["POST"])
 def generate():
@@ -21,5 +23,4 @@ def generate():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    # Run on port 8086
     app.run(host="0.0.0.0", port=8086)
