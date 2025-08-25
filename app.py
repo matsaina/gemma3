@@ -1,29 +1,29 @@
-from flask import Flask, request, jsonify
-from transformers import AutoTokenizer, AutoModelForCausalLM
-import os
+from fastapi import FastAPI
+from pydantic import BaseModel
+from transformers import AutoModelForCausalLM, AutoTokenizer
+import torch
 
-app = Flask(__name__)
+app = FastAPI(title="Gemma-3 API")
 
-MODEL_NAME = "google/gemma-3-270m"
-HF_TOKEN = os.getenv("HF_TOKEN")
+# Load model & tokenizer once at startup
+model_name = "google/gemma-3-1.1-270m-it"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name)
 
-# Authenticate with token
-tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, token=HF_TOKEN)
-model = AutoModelForCausalLM.from_pretrained(MODEL_NAME, token=HF_TOKEN)
+class PromptRequest(BaseModel):
+    prompt: str
 
-@app.route("/generate", methods=["POST"])
-def generate():
-    try:
-        data = request.get_json()
-        prompt = data.get("prompt", "")
+@app.post("/generate")
+async def generate(request: PromptRequest):
+    inputs = tokenizer(request.prompt, return_tensors="pt")
 
-        inputs = tokenizer(prompt, return_tensors="pt")
-        outputs = model.generate(**inputs, max_length=150)
-        response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    with torch.inference_mode():
+        outputs = model.generate(
+            **inputs,
+            max_new_tokens=100,
+            do_sample=True,
+            temperature=0.7
+        )
 
-        return jsonify({"response": response})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8086)
+    text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    return {"response": text}
