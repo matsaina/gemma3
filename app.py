@@ -6,9 +6,14 @@ import torch
 app = FastAPI(title="Gemma-3 API")
 
 # Load model & tokenizer once at startup
-model_name = "google/gemma-3-1.1-270m-it"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name)
+model_name = "google/gemma-3-270m-it"  # or "google/gemma-3-270m" for the base version
+import os
+
+HF_TOKEN = os.getenv("HF_TOKEN")
+
+tokenizer = AutoTokenizer.from_pretrained(model_name, token=HF_TOKEN)
+model = AutoModelForCausalLM.from_pretrained(model_name, token=HF_TOKEN)
+
 
 class PromptRequest(BaseModel):
     prompt: str
